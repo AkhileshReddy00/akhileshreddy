@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Moon, Sun } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Menu, X, Moon, Sun, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -15,6 +20,20 @@ const Header = () => {
     if (shouldBeDark) {
       document.documentElement.classList.add("dark");
     }
+  }, []);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const toggleTheme = () => {
@@ -28,6 +47,11 @@ const Header = () => {
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setIsMenuOpen(false);
   };
 
   return (
@@ -77,9 +101,31 @@ const Header = () => {
               )}
             </button>
             
-            <Button className="hidden md:flex bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 py-2 hover:scale-105 transition-all">
-              Join Now
-            </Button>
+            {user ? (
+              <div className="hidden md:flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/60">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm font-medium max-w-[120px] truncate">
+                    {user.email?.split("@")[0]}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleSignOut}
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => navigate("/auth")}
+                className="hidden md:flex bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 py-2 hover:scale-105 transition-all"
+              >
+                Join Now
+              </Button>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -111,9 +157,32 @@ const Header = () => {
               <a href="/about" className="text-sm font-medium hover:text-accent transition-colors">
                 About
               </a>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full w-full">
-                Join Now
-              </Button>
+              {user ? (
+                <div className="flex flex-col gap-2 pt-2 border-t border-border">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span className="truncate">{user.email}</span>
+                  </div>
+                  <Button
+                    onClick={handleSignOut}
+                    variant="outline"
+                    className="rounded-full w-full"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    navigate("/auth");
+                    setIsMenuOpen(false);
+                  }}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full w-full"
+                >
+                  Join Now
+                </Button>
+              )}
             </nav>
           </div>
         )}
