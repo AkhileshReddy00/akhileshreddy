@@ -1,11 +1,44 @@
+import { useState } from "react";
+import { z } from "zod";
 import Header from "@/components/Header";
 import ArticleCard from "@/components/ArticleCard";
 import HeroSection from "@/components/HeroSection";
 import IntroSection from "@/components/IntroSection";
 import { articles } from "@/data/articles";
+import { useToast } from "@/hooks/use-toast";
+
+const emailSchema = z.string().trim().email("Please enter a valid email address").max(255, "Email is too long");
 
 const Index = () => {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   const featuredArticles = articles.slice(0, 6);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const result = emailSchema.safeParse(email);
+    if (!result.success) {
+      toast({
+        title: "Invalid email",
+        description: result.error.errors[0]?.message || "Please enter a valid email",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    // Simulate subscription (replace with actual backend call when implemented)
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    toast({
+      title: "Subscribed!",
+      description: "Thank you for subscribing to our newsletter.",
+    });
+    setEmail("");
+    setIsSubmitting(false);
+  };
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
@@ -36,23 +69,29 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Newsletter Section */}
         <section className="my-20 rounded-[2.5rem] bg-card p-12 md:p-16 text-center animate-scale-in">
           <div className="max-w-2xl mx-auto space-y-8">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Stay inspired.</h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Subscribe to receive our latest articles and insights directly in your inbox.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
                 type="email"
                 placeholder="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 px-6 py-4 rounded-full border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                disabled={isSubmitting}
               />
-              <button className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 hover:scale-105 transition-all">
-                Subscribe
+              <button 
+                type="submit"
+                disabled={isSubmitting}
+                className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "..." : "Subscribe"}
               </button>
-            </div>
+            </form>
           </div>
         </section>
       </main>
