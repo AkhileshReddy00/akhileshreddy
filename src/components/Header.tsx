@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Menu, X, Moon, Sun, LogOut, User } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Menu, X, Moon, Sun, LogOut, User, PenSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -103,6 +103,12 @@ const Header = () => {
             
             {user ? (
               <div className="hidden md:flex items-center gap-2">
+                <Link to="/my-blogs">
+                  <Button variant="ghost" size="sm" className="rounded-full">
+                    <PenSquare className="h-4 w-4 mr-2" />
+                    My Blogs
+                  </Button>
+                </Link>
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/60">
                   <User className="h-4 w-4" />
                   <span className="text-sm font-medium max-w-[120px] truncate">
@@ -163,6 +169,12 @@ const Header = () => {
                     <User className="h-4 w-4" />
                     <span className="truncate">{user.email}</span>
                   </div>
+                  <Link to="/my-blogs" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="rounded-full w-full">
+                      <PenSquare className="h-4 w-4 mr-2" />
+                      My Blogs
+                    </Button>
+                  </Link>
                   <Button
                     onClick={handleSignOut}
                     variant="outline"

@@ -17,6 +17,9 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import CreateBlog from "./pages/CreateBlog";
+import MyBlogs from "./pages/MyBlogs";
+import BlogView from "./pages/BlogView";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +43,9 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/create-blog" element={<CreateBlog />} />
+          <Route path="/my-blogs" element={<MyBlogs />} />
+          <Route path="/blog/:id" element={<BlogView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
